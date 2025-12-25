@@ -89,8 +89,8 @@ Hooks.on('renderSceneControls', (app, html, data) => {
     if (!game.user.isGM) return;
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
-    const border = enabled ? "#ff6400" : "#ff4444"; // Orange for ON, Red for OFF
-    const color = enabled ? "#ffffff" : "#ff4444";
+    const border = enabled ? "#00ff00" : "#ff4444"; // Green for ON, Red for OFF
+    const color = enabled ? "#00ff00" : "#ff4444";
     const icon = "fas fa-dungeon";
     const title = enabled ? "Lair Control: On" : "Lair Control: Off";
 

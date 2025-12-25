@@ -105,9 +105,18 @@ Hooks.on('renderSceneControls', (app, html, data) => {
     `);
 
     // Find the main controls list (Left Sidebar)
-    // 'nav.main-controls' or 'ol.main-controls' depending on foundry version/theme
-    // The IRLMod uses 'menu#scene-controls-layers' for the sidebar groups
-    const toolsMenu = html.find('.main-controls');
+    // We attempt to find the V13/Theme specific menu first, then fallback to standard OL
+    const jqSceneControlsRoot = html;
+    let toolsMenu = jqSceneControlsRoot.find('menu#scene-controls-layers').first();
+
+    if (!toolsMenu.length) {
+        toolsMenu = jqSceneControlsRoot.find('ol.main-controls').first();
+    }
+
+    if (!toolsMenu.length) {
+        console.warn("Lair Control | Could not find 'menu#scene-controls-layers' OR 'ol.main-controls'. Button injection failed.");
+        return;
+    }
 
     // Avoid duplicate injection
     if (toolsMenu.find('.lair-control-btn').length === 0) {

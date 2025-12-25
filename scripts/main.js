@@ -100,18 +100,27 @@ Hooks.on('getSceneControlButtons', (controls) => {
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
-        toggle: true,
-            active: enabled,
+    outputControls.push({
+        name: "lair-control",
+        title: "Lair Control",
+        icon: "fas fa-dungeon", // Fallback if layer icon needed
+        layer: "controls",
+        tools: [
+            {
+                name: "toggle-ha",
+                title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
+                icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
+                toggle: true,
+                active: enabled,
                 onClick: async (toggled) => {
                     await game.settings.set('foundry-ha-integration', 'enabled', toggled);
                     // Refresh controls to update tooltip/icon state if needed
                     ui.controls.render();
                 }
-}
-            ]
-        });
+            }
+        ]
     });
+});
 
 Hooks.once('ready', () => {
     console.log('Home Assistant Integration | Ready');

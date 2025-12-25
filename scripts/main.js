@@ -124,11 +124,16 @@ Hooks.on('renderSceneControls', (app, html, data) => {
         toolsMenu.append(buttonHtml);
     }
 
-    // Attach Click Listener
-    html.find('.lair-control-btn button').on('click', async (event) => {
+    // Attach Click Listener using robust namespace pattern
+    // We target the *Button* specifically, unbind any previous listeners, and re-bind.
+    const btn = html.find('.lair-control-btn button');
+    btn.off('click.lairControl').on('click.lairControl', async (event) => {
         event.preventDefault();
+        event.stopPropagation(); // Stop Foundry from processing this as a layer switch
+
         const current = game.settings.get('foundry-ha-integration', 'enabled');
-        console.log(`Lair Control | Toggling from ${current} to ${!current}`);
+        console.log(`Lair Control | Button Clicked! Toggling from ${current} to ${!current}`);
+
         await game.settings.set('foundry-ha-integration', 'enabled', !current);
         // Setting onChange triggers ui.controls.render(), which re-runs this hook
     });

@@ -257,7 +257,10 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
         $(event.currentTarget).addClass('active');
         $html.find('.tab[data-tab="lair-control"]').addClass('active');
 
-        app.setPosition({ height: "auto" });
+        // Force resize after a macrotask
+        setTimeout(() => {
+            app.setPosition({ height: "auto" });
+        }, 50);
     });
 
     // 2. Inject Tab Content
@@ -286,7 +289,9 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     $html.find('button[type="submit"]').before(tabContent);
 
     // Resize to fit new content
-    app.setPosition({ height: "auto" });
+    setTimeout(() => {
+        app.setPosition({ height: "auto" });
+    }, 50);
 });
 
 Hooks.on('canvasReady', async (canvas) => {

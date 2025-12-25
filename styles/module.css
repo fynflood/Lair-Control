@@ -5,3 +5,25 @@
     color: #ff4444 !important;
     text-shadow: 0 0 5px #ff0000;
 }
+
+/* Ensure the tab content has room to breathe */
+.tab[data-tab="lair-control"] {
+    padding: 10px;
+    min-height: 200px;
+    /* Force minimum height to prevent squashing */
+    display: none;
+    /* Hide by default */
+}
+
+.tab[data-tab="lair-control"].active {
+    display: block;
+    /* Show when active */
+    overflow-y: auto;
+    /* Allow scrolling if needed */
+}
+
+.tab[data-tab="lair-control"] .notes {
+    color: #999;
+    font-size: 0.8em;
+    margin-top: 5px;
+}

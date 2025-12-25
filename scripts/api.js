@@ -87,7 +87,15 @@ export class HomeAssistantClient {
             }
 
             const data = await response.json();
-            return data.map(entity => entity.entity_id).sort();
+            const allowedDomains = ['scene', 'script', 'light', 'switch', 'input_boolean', 'automation'];
+
+            return data
+                .map(entity => entity.entity_id)
+                .filter(id => {
+                    const domain = id.split('.')[0];
+                    return allowedDomains.includes(domain);
+                })
+                .sort();
         } catch (error) {
             console.error("Home Assistant Integration: Network Error during fetchEntities", error);
             return [];

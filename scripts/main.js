@@ -89,48 +89,49 @@ Hooks.on('getSceneControlButtons', (controls) => {
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    const toggleTool = {
+    const toolConfig = {
         name: "toggle-ha",
         title: enabled ? "HA Integration: Enabled" : "HA Integration: Disabled",
-        icon: enabled ? "fas fa-home" : "fas fa-ban",
+        icon: "fas fa-dungeon", // Always use Dungeon icon as requested
         toggle: true,
         active: enabled,
-        onClick: async (toggled) => {
+        onChange: async (toggled) => { // Updated from onClick to fix V13 deprecation
             console.log(`Lair Control | Toggling to ${toggled}`);
             await game.settings.set('foundry-ha-integration', 'enabled', toggled);
-            // Setting onChange will handle render
         }
     };
 
-    // Find the Token Controls group
-    let tokenGroup = null;
-
-    // V13+ Object/Map Structure Detection
+    // V13+ Object Structure Support (Strict)
     if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
-        tokenGroup = controls['tokens']; // Typically 'tokens' key in V13
-    }
-    // Legacy Array Support
-    else if (Array.isArray(controls)) {
-        tokenGroup = controls.find(c => c.name === "token");
-    }
 
-    // Inject the tool if found
-    if (tokenGroup && tokenGroup.tools) {
-        if (Array.isArray(tokenGroup.tools)) {
-            // Legacy Array Support
-            const existing = tokenGroup.tools.find(t => t.name === "toggle-ha");
-            if (!existing) {
-                tokenGroup.tools.push(toggleTool);
-            }
-        } else if (typeof tokenGroup.tools === 'object') {
-            // V13 Object Support
-            console.log("Lair Control | Detected V13 Object-based tools. Injecting via key assignment.");
-            tokenGroup.tools['toggle-ha'] = toggleTool;
-        } else {
-            console.error("Lair Control | Token Tools is neither Array nor Object.", tokenGroup.tools);
-        }
-    } else {
-        console.error("Lair Control | Could not find Token Control Group. Injection failed.");
+        // Define the Tools Dictionary
+        const v13Tools = {
+            "toggle-ha": toolConfig
+        };
+
+        // Define the Group Dictionary
+        const v13Group = {
+            name: "lair-control",
+            title: "Lair Control",
+            icon: "fas fa-dungeon",
+            layer: "controls", // Use generic layer
+            tools: v13Tools
+        };
+
+        // Inject Group
+        controls['lair-control'] = v13Group;
+
+    }
+    // Legacy Array Support (Fallback)
+    else if (Array.isArray(controls)) {
+        const legacyGroup = {
+            name: "lair-control",
+            title: "Lair Control",
+            icon: "fas fa-dungeon",
+            layer: "controls",
+            tools: [toolConfig]
+        };
+        controls.push(legacyGroup);
     }
 });
 

@@ -116,10 +116,18 @@ Hooks.on('getSceneControlButtons', (controls) => {
 
     // Inject the tool if found
     if (tokenGroup && tokenGroup.tools) {
-        // Prevent duplicates
-        const existing = tokenGroup.tools.find(t => t.name === "toggle-ha");
-        if (!existing) {
-            tokenGroup.tools.push(toggleTool);
+        if (Array.isArray(tokenGroup.tools)) {
+            // Legacy Array Support
+            const existing = tokenGroup.tools.find(t => t.name === "toggle-ha");
+            if (!existing) {
+                tokenGroup.tools.push(toggleTool);
+            }
+        } else if (typeof tokenGroup.tools === 'object') {
+            // V13 Object Support
+            console.log("Lair Control | Detected V13 Object-based tools. Injecting via key assignment.");
+            tokenGroup.tools['toggle-ha'] = toggleTool;
+        } else {
+            console.error("Lair Control | Token Tools is neither Array nor Object.", tokenGroup.tools);
         }
     } else {
         console.error("Lair Control | Could not find Token Control Group. Injection failed.");

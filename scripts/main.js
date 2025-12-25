@@ -243,6 +243,23 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     const nav = $html.find('nav.sheet-tabs');
     nav.append(tabNav);
 
+    // Manually handle click since we injected after render
+    nav.find('a[data-tab="lair-control"]').on('click', (event) => {
+        event.preventDefault();
+        const tabs = $html.find('nav.sheet-tabs .item');
+        const content = $html.find('.tab');
+
+        // Deactivate all
+        tabs.removeClass('active');
+        content.removeClass('active');
+
+        // Activate Lair Control
+        $(event.currentTarget).addClass('active');
+        $html.find('.tab[data-tab="lair-control"]').addClass('active');
+
+        app.setPosition({ height: "auto" });
+    });
+
     // 2. Inject Tab Content
     // We match the style of existing tabs
     const tabContent = `

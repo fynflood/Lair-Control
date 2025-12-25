@@ -126,7 +126,7 @@ Hooks.on('renderSceneControls', (app, html, data) => {
 
     // Attach Click Listener using robust namespace pattern
     // We target the *Button* specifically, unbind any previous listeners, and re-bind.
-    const btn = html.find('.lair-control-btn button');
+    const btn = jqSceneControlsRoot.find('.lair-control-btn button');
     btn.off('click.lairControl').on('click.lairControl', async (event) => {
         event.preventDefault();
         event.stopPropagation(); // Stop Foundry from processing this as a layer switch

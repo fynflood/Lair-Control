@@ -64,4 +64,33 @@ export class HomeAssistantClient {
             console.error("Home Assistant Integration: Failed to set state", error);
         }
     }
+
+    async fetchEntities() {
+        if (!this.url || !this.token) {
+            console.warn("Home Assistant Integration: URL or Token not configured.");
+            return [];
+        }
+
+        const endpoint = `${this.url}/api/states`;
+        try {
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`Home Assistant Integration: Failed to fetch entities (${response.status})`);
+                return [];
+            }
+
+            const data = await response.json();
+            return data.map(entity => entity.entity_id).sort();
+        } catch (error) {
+            console.error("Home Assistant Integration: Network Error during fetchEntities", error);
+            return [];
+        }
+    }
 }

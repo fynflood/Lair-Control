@@ -210,17 +210,31 @@ Hooks.on('deleteCombat', (combat, options, userId) => {
     }
 });
 
-Hooks.on('renderSceneConfig', (app, html, data) => {
-    const scene = app.object;
+Hooks.on('renderSceneConfig', async (app, html, data) => {
+    const scene = app.document ?? app.object;
+    if (!scene) {
+        console.warn("Lair Control | Scene Config opened but scene document is missing", app);
+        return;
+    }
     const haEntity = scene.getFlag('foundry-ha-integration', 'haEntity') || "";
+
+    // Fetch entities from HA
+    let options = "";
+    const entities = await haClient.fetchEntities();
+    if (entities && entities.length > 0) {
+        options = entities.map(e => `<option value="${e}"></option>`).join('');
+    }
 
     const formGroup = `
     <div class="form-group">
         <label>Home Assistant Entity</label>
         <div class="form-fields">
-            <input type="text" name="flags.foundry-ha-integration.haEntity" value="${haEntity}" placeholder="scene.my_dungeon_scene">
+            <input type="text" name="flags.foundry-ha-integration.haEntity" value="${haEntity}" list="ha-entities-list" placeholder="scene.my_dungeon_scene">
+            <datalist id="ha-entities-list">
+                ${options}
+            </datalist>
         </div>
-        <p class="notes">Enter the Entity ID (scene, script, light) to turn on when this Scene is activated.</p>
+        <p class="notes">Select or enter the Entity ID (scene, script, light) to turn on when this Scene is activated.</p>
     </div>
     `;
 

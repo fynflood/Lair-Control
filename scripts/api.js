@@ -11,7 +11,11 @@ export class HomeAssistantClient {
 
     async callService(domain, service, data = {}) {
         const enabled = game.settings.get('foundry-ha-integration', 'enabled');
-        if (!enabled) return;
+        console.log(`Lair Control | Enabled: ${enabled}`);
+        if (!enabled) {
+            console.log("Lair Control | Call skipped (Disabled)");
+            return;
+        }
 
         if (!this.url || !this.token) {
             console.warn("Home Assistant Integration: URL or Token not configured.");

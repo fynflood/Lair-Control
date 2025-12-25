@@ -97,10 +97,12 @@ Hooks.on('getSceneControlButtons', (controls) => {
             {
                 name: "toggle-ha",
                 title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
-                icon: "fas fa-home",
+                icon: enabled ? "fas fa-home" : "fas fa-ban",
                 toggle: true,
                 active: enabled,
                 onClick: async (toggled) => {
+                    // toggled arg is the NEW state
+                    console.log(`Lair Control | Toggling to ${toggled}`);
                     await game.settings.set('foundry-ha-integration', 'enabled', toggled);
                     ui.controls.render();
                 }

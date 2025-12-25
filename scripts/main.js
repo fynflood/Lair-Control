@@ -87,54 +87,42 @@ Hooks.once('init', () => {
 Hooks.on('getSceneControlButtons', (controls) => {
     if (!game.user.isGM) return;
 
-    // Prevent duplicates
-    // V13 Object check
-    if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
-        if (controls['lair-control']) return;
-    }
-    // Array check
-    else if (Array.isArray(controls)) {
-        if (controls.find(c => c.name === "lair-control")) return;
-    }
-
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    const myControl = {
-        name: "lair-control",
-        title: "Lair Control",
-        icon: "fas fa-dungeon", // Fallback if layer icon needed
-        layer: "controls",
-        tools: [
-            {
-                name: "toggle-ha",
-                title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
-                icon: enabled ? "fas fa-home" : "fas fa-ban",
-                toggle: true,
-                active: enabled,
-                onClick: async (toggled) => {
-                    // toggled arg is the NEW state provided by Foundry
-                    console.log(`Lair Control | Toggling to ${toggled}`);
-                    await game.settings.set('foundry-ha-integration', 'enabled', toggled);
-                    // No manual render here; the setting onChange handles it safely
-                }
-            }
-        ]
+    const toggleTool = {
+        name: "toggle-ha",
+        title: enabled ? "HA Integration: Enabled" : "HA Integration: Disabled",
+        icon: enabled ? "fas fa-home" : "fas fa-ban",
+        toggle: true,
+        active: enabled,
+        onClick: async (toggled) => {
+            console.log(`Lair Control | Toggling to ${toggled}`);
+            await game.settings.set('foundry-ha-integration', 'enabled', toggled);
+            // Setting onChange will handle render
+        }
     };
 
-    // V13+ Object/Map Structure Detection
-    if (controls.push) {
-        // Legacy/Stable Array support (V10-V12)
-        controls.push(myControl);
-    } else if (typeof controls === 'object' && controls !== null) {
-        // V13+ Object Support (Key assignment)
-        console.log("Lair Control | Detected V13 Object-based controls. Injecting via key assignment.");
-        // Try to assign using key if it acts like a dictionary
-        controls['lair-control'] = myControl;
+    // Find the Token Controls group
+    let tokenGroup = null;
 
-        // Failsafe: If for some reason the UI relies on 'order', we let core handle it. 
-        // In V13, objects in this hook are typically 'ControlGroups'.
+    // V13+ Object/Map Structure Detection
+    if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
+        tokenGroup = controls['tokens']; // Typically 'tokens' key in V13
+    }
+    // Legacy Array Support
+    else if (Array.isArray(controls)) {
+        tokenGroup = controls.find(c => c.name === "token");
+    }
+
+    // Inject the tool if found
+    if (tokenGroup && tokenGroup.tools) {
+        // Prevent duplicates
+        const existing = tokenGroup.tools.find(t => t.name === "toggle-ha");
+        if (!existing) {
+            tokenGroup.tools.push(toggleTool);
+        }
     } else {
-        console.error("Lair Control | Unknown controls structure. Injection failed.", controls);
+        console.error("Lair Control | Could not find Token Control Group. Injection failed.");
     }
 });
 

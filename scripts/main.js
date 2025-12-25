@@ -85,30 +85,30 @@ Hooks.once('init', () => {
 
 Hooks.on('getSceneControlButtons', (controls) => {
     if (!game.user.isGM) return;
-    if (!controls) return;
+
+    // V13 Safety: Ensure controls is an array
+    let outputControls = controls;
+    if (!Array.isArray(outputControls)) {
+        console.warn("Lair Control | 'controls' hook argument is not an array. Trying ui.controls.controls.");
+        if (ui.controls && Array.isArray(ui.controls.controls)) {
+            outputControls = ui.controls.controls;
+        } else {
+            console.error("Lair Control | Could not find controls array. Button injection failed.", outputControls);
+            return;
+        }
+    }
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    // Ensure we are adding to an existing array, V12+ sometimes behaves oddly with module reload
-    if (controls.push) {
-        controls.push({
-            name: "lair-control",
-            title: "Lair Control",
-            icon: "fas fa-dungeon", // Fallback if layer icon needed
-            layer: "controls",
-            tools: [
-                {
-                    name: "toggle-ha",
-                    title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
-                    icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
-                    toggle: true,
-                    active: enabled,
-                    onClick: async (toggled) => {
-                        await game.settings.set('foundry-ha-integration', 'enabled', toggled);
-                        // Refresh controls to update tooltip/icon state if needed
-                        ui.controls.render();
-                    }
+    icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
+        toggle: true,
+            active: enabled,
+                onClick: async (toggled) => {
+                    await game.settings.set('foundry-ha-integration', 'enabled', toggled);
+                    // Refresh controls to update tooltip/icon state if needed
+                    ui.controls.render();
                 }
+}
             ]
         });
     });

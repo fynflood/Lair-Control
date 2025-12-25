@@ -10,6 +10,9 @@ export class HomeAssistantClient {
     }
 
     async callService(domain, service, data = {}) {
+        const enabled = game.settings.get('foundry-ha-integration', 'enabled');
+        if (!enabled) return;
+
         if (!this.url || !this.token) {
             console.warn("Home Assistant Integration: URL or Token not configured.");
             return;
@@ -42,7 +45,7 @@ export class HomeAssistantClient {
         }
         const endpoint = `${this.url}/api/states/${entityId}`;
         try {
-             const response = await fetch(endpoint, {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,

@@ -6,6 +6,15 @@ Hooks.once('init', () => {
     console.log('Home Assistant Integration | Initializing');
 
     // Register Settings
+    game.settings.register('foundry-ha-integration', 'enabled', {
+        name: 'Enable Integration',
+        hint: 'Toggle the Home Assistant connection on/off.',
+        scope: 'client',
+        config: false, // We will use the UI button
+        type: Boolean,
+        default: true
+    });
+
     game.settings.register('foundry-ha-integration', 'haUrl', {
         name: 'Home Assistant URL',
         hint: 'e.g., http://192.168.1.5:8123',
@@ -72,6 +81,33 @@ Hooks.once('init', () => {
     });
 
     haClient = new HomeAssistantClient();
+});
+
+Hooks.on('getSceneControlButtons', (controls) => {
+    if (!game.user.isGM) return;
+
+    const enabled = game.settings.get('foundry-ha-integration', 'enabled');
+
+    controls.push({
+        name: "lair-control",
+        title: "Lair Control",
+        icon: "fas fa-dungeon", // Fallback if layer icon needed
+        layer: "controls",
+        tools: [
+            {
+                name: "toggle-ha",
+                title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
+                icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
+                toggle: true,
+                active: enabled,
+                onClick: async (toggled) => {
+                    await game.settings.set('foundry-ha-integration', 'enabled', toggled);
+                    // Refresh controls to update tooltip/icon state if needed
+                    ui.controls.render();
+                }
+            }
+        ]
+    });
 });
 
 Hooks.once('ready', () => {

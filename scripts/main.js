@@ -267,6 +267,7 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     // We match the style of existing tabs
     const tabContent = `
     <div class="tab" data-tab="lair-control">
+        <p class="notes">Configure automation triggers for this Scene.</p>
         <div class="form-group">
             <label>Home Assistant Entity</label>
             <div class="form-fields">
@@ -275,10 +276,7 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
                     ${options}
                 </datalist>
             </div>
-            <p class="notes">Select or enter the Entity ID (scene, script, light) to turn on when this Scene is activated.</p>
-        </div>
-        <div class="form-group">
-             <p class="notes">More Lair Control settings may appear here in the future.</p>
+            <p class="notes">Select or enter the Entity ID to turn on when this Scene is activated.</p>
         </div>
     </div>
     `;

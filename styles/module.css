@@ -10,20 +10,39 @@
 .tab[data-tab="lair-control"] {
     padding: 10px;
     min-height: 200px;
-    /* Force minimum height to prevent squashing */
     display: none;
-    /* Hide by default */
 }
 
 .tab[data-tab="lair-control"].active {
-    display: block;
-    /* Show when active */
-    overflow-y: auto;
-    /* Allow scrolling if needed */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Fix Label Width for Standard Foundry Forms */
+.tab[data-tab="lair-control"] .form-group {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.tab[data-tab="lair-control"] .form-group label {
+    flex: 1;
+    white-space: nowrap;
+    margin-right: 10px;
+    color: var(--color-text-dark-primary);
+    /* Ensure visibility */
+}
+
+.tab[data-tab="lair-control"] .form-group .form-fields {
+    flex: 3;
 }
 
 .tab[data-tab="lair-control"] .notes {
-    color: #999;
+    color: #888;
     font-size: 0.8em;
-    margin-top: 5px;
+    flex: 100%;
+    /* Break to new line */
+    margin-top: 4px;
 }

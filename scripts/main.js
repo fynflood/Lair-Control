@@ -88,6 +88,10 @@ Hooks.once('ready', () => {
 });
 
 Hooks.on('createChatMessage', async (message) => {
+    // Only the GM (who presumably has the HA connection) should trigger the lights
+    // This prevents remote players (off-VPN) from getting Network Errors
+    if (!game.user.isGM) return;
+
     if (!message.isRoll || !message.rolls || message.rolls.length === 0) return;
 
     for (let roll of message.rolls) {

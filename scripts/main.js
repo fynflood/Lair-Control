@@ -84,45 +84,45 @@ Hooks.once('init', () => {
     haClient = new HomeAssistantClient();
 });
 
-Hooks.on('getSceneControlButtons', (controls) => {
+// Replaced data-based injection with DOM-based injection (V13 Safe)
+Hooks.on('renderSceneControls', (app, html, data) => {
     if (!game.user.isGM) return;
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
+    const border = enabled ? "#ff6400" : "#ff4444"; // Orange for ON, Red for OFF
+    const color = enabled ? "#ffffff" : "#ff4444";
+    const icon = "fas fa-dungeon";
+    const title = enabled ? "Lair Control: On" : "Lair Control: Off";
 
-    // Tool Configuration (The actual button inside the group)
-    const toggleTool = {
-        name: "toggle-ha",
-        title: enabled ? "HA Integration: Enabled" : "HA Integration: Disabled",
-        icon: enabled ? "fas fa-toggle-on" : "fas fa-toggle-off", // Distinct icon for the tool itself
-        toggle: true,
-        active: enabled,
-        onClick: async () => {
-            const current = game.settings.get('foundry-ha-integration', 'enabled');
-            console.log(`Lair Control | Toggling from ${current} to ${!current}`);
-            await game.settings.set('foundry-ha-integration', 'enabled', !current);
-        }
-    };
+    // Create the button HTML manually (IRLMod Pattern)
+    // We add 'lair-control-btn' class for easy finding later
+    const buttonHtml = $(`
+        <li class="scene-control lair-control-btn" data-control="lair-control" data-tooltip="${title}">
+            <button type="button" class="control ui-control layer icon" style="color: ${color}; border-color: ${border}">
+                <i class="${icon}"></i>
+            </button>
+        </li>
+    `);
 
-    // Group Configuration (The Sidebar Icon)
-    const lairGroup = {
-        name: "lair-control",
-        title: "Lair Control",
-        icon: enabled ? "fas fa-dungeon" : "fas fa-dungeon lair-disabled", // CSS styled icon
-        layer: "tokens", // IMPORTANT: Map to an existing layer (Tokens) to prevent UI crashes/blank canvas
-        tools: { // V13 requires tools to be an object/dictionary
-            "toggle-ha": toggleTool
-        }
-    };
+    // Find the main controls list (Left Sidebar)
+    // 'nav.main-controls' or 'ol.main-controls' depending on foundry version/theme
+    // The IRLMod uses 'menu#scene-controls-layers' for the sidebar groups
+    const toolsMenu = html.find('.main-controls');
 
-    // V13+ Object Structure Injection
-    if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
-        controls['lair-control'] = lairGroup;
+    // Avoid duplicate injection
+    if (toolsMenu.find('.lair-control-btn').length === 0) {
+        // Append to the end of the main groups list (First Row)
+        toolsMenu.append(buttonHtml);
     }
-    // Legacy Array Support
-    else if (Array.isArray(controls)) {
-        const legacyGroup = { ...lairGroup, tools: [toggleTool] };
-        controls.push(legacyGroup);
-    }
+
+    // Attach Click Listener
+    html.find('.lair-control-btn button').on('click', async (event) => {
+        event.preventDefault();
+        const current = game.settings.get('foundry-ha-integration', 'enabled');
+        console.log(`Lair Control | Toggling from ${current} to ${!current}`);
+        await game.settings.set('foundry-ha-integration', 'enabled', !current);
+        // Setting onChange triggers ui.controls.render(), which re-runs this hook
+    });
 });
 
 Hooks.once('ready', () => {

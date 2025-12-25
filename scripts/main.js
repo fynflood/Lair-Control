@@ -89,32 +89,39 @@ Hooks.on('getSceneControlButtons', (controls) => {
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    // Define the Group Button Configuration
-    // We use a Group-level onClick to prevent Layer Switching (stateless button)
-    const lairGroup = {
-        name: "lair-control",
-        title: enabled ? "Lair Control: On" : "Lair Control: Off",
-        icon: enabled ? "fas fa-dungeon" : "fas fa-dungeon lair-disabled", // Use CSS class for color
-        layer: "controls", // Required but ignored due to onClick
-        visible: true,
-        tools: {}, // Empty tools object for V13 safety
+    // Tool Configuration (The actual button inside the group)
+    const toggleTool = {
+        name: "toggle-ha",
+        title: enabled ? "HA Integration: Enabled" : "HA Integration: Disabled",
+        icon: enabled ? "fas fa-toggle-on" : "fas fa-toggle-off", // Distinct icon for the tool itself
+        toggle: true,
+        active: enabled,
         onClick: async () => {
             const current = game.settings.get('foundry-ha-integration', 'enabled');
             console.log(`Lair Control | Toggling from ${current} to ${!current}`);
             await game.settings.set('foundry-ha-integration', 'enabled', !current);
-            // ui.controls.render() is handled by the Setting's onChange callback
         }
     };
 
-    // V13+ Object Structure Support (Strict)
+    // Group Configuration (The Sidebar Icon)
+    const lairGroup = {
+        name: "lair-control",
+        title: "Lair Control",
+        icon: enabled ? "fas fa-dungeon" : "fas fa-dungeon lair-disabled", // CSS styled icon
+        layer: "tokens", // IMPORTANT: Map to an existing layer (Tokens) to prevent UI crashes/blank canvas
+        tools: { // V13 requires tools to be an object/dictionary
+            "toggle-ha": toggleTool
+        }
+    };
+
+    // V13+ Object Structure Injection
     if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
         controls['lair-control'] = lairGroup;
     }
-    // Legacy Array Support (Fallback)
+    // Legacy Array Support
     else if (Array.isArray(controls)) {
-        // For array support, tools must be an array
-        lairGroup.tools = [];
-        controls.push(lairGroup);
+        const legacyGroup = { ...lairGroup, tools: [toggleTool] };
+        controls.push(legacyGroup);
     }
 });
 

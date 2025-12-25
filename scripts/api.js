@@ -36,7 +36,7 @@ export class HomeAssistantClient {
             if (!response.ok) {
                 console.error(`Home Assistant Integration: API Call Failed (${response.status})`, response.statusText);
             } else {
-                console.log(`Home Assistant Integration: Triggered ${domain}.${service}`);
+                console.log(`Home Assistant Integration: Triggered ${domain}.${service}`, data);
             }
         } catch (error) {
             console.error("Home Assistant Integration: Network Error", error);

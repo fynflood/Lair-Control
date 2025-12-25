@@ -1,6 +1,6 @@
 {
   "id": "foundry-ha-integration",
-  "title": "Home Assistant Integration",
+  "title": "Lair Control",
   "description": "Integrates Foundry VTT with Home Assistant for immersive lighting and effects.",
   "version": "1.0.0",
   "author": "fynflood",

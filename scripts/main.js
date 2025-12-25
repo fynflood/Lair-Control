@@ -100,7 +100,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    outputControls.push({
+    const myControl = {
         name: "lair-control",
         title: "Lair Control",
         icon: "fas fa-dungeon", // Fallback if layer icon needed
@@ -114,12 +114,21 @@ Hooks.on('getSceneControlButtons', (controls) => {
                 active: enabled,
                 onClick: async (toggled) => {
                     await game.settings.set('foundry-ha-integration', 'enabled', toggled);
-                    // Refresh controls to update tooltip/icon state if needed
                     ui.controls.render();
                 }
             }
         ]
-    });
+    };
+
+    if (Array.isArray(outputControls)) {
+        outputControls.push(myControl);
+    } else if (typeof outputControls === 'object' && outputControls !== null) {
+        // V13 (Build 351+) seems to use an Object/Map structure instead of Array
+        console.log("Lair Control | Detected V13 Object-based controls. Injecting via key assignment.");
+        outputControls['lair-control'] = myControl;
+    } else {
+        console.error("Lair Control | Unknown controls structure. Injection failed.", outputControls);
+    }
 });
 
 Hooks.once('ready', () => {

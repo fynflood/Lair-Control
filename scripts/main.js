@@ -85,30 +85,33 @@ Hooks.once('init', () => {
 
 Hooks.on('getSceneControlButtons', (controls) => {
     if (!game.user.isGM) return;
+    if (!controls) return;
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    controls.push({
-        name: "lair-control",
-        title: "Lair Control",
-        icon: "fas fa-dungeon", // Fallback if layer icon needed
-        layer: "controls",
-        tools: [
-            {
-                name: "toggle-ha",
-                title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
-                icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
-                toggle: true,
-                active: enabled,
-                onClick: async (toggled) => {
-                    await game.settings.set('foundry-ha-integration', 'enabled', toggled);
-                    // Refresh controls to update tooltip/icon state if needed
-                    ui.controls.render();
+    // Ensure we are adding to an existing array, V12+ sometimes behaves oddly with module reload
+    if (controls.push) {
+        controls.push({
+            name: "lair-control",
+            title: "Lair Control",
+            icon: "fas fa-dungeon", // Fallback if layer icon needed
+            layer: "controls",
+            tools: [
+                {
+                    name: "toggle-ha",
+                    title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
+                    icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
+                    toggle: true,
+                    active: enabled,
+                    onClick: async (toggled) => {
+                        await game.settings.set('foundry-ha-integration', 'enabled', toggled);
+                        // Refresh controls to update tooltip/icon state if needed
+                        ui.controls.render();
+                    }
                 }
-            }
-        ]
+            ]
+        });
     });
-});
 
 Hooks.once('ready', () => {
     console.log('Home Assistant Integration | Ready');

@@ -95,9 +95,12 @@ Hooks.on('getSceneControlButtons', (controls) => {
         icon: "fas fa-dungeon", // Always use Dungeon icon as requested
         toggle: true,
         active: enabled,
-        onChange: async (toggled) => { // Updated from onClick to fix V13 deprecation
-            console.log(`Lair Control | Toggling to ${toggled}`);
-            await game.settings.set('foundry-ha-integration', 'enabled', toggled);
+        onClick: async () => { // Reverting to onClick but ignoring arg as V13 allows usage if generic
+            // In V13, onClick(event) is standard for Tools.
+            // We manually toggle the setting to ensure accuracy.
+            const current = game.settings.get('foundry-ha-integration', 'enabled');
+            console.log(`Lair Control | Toggling from ${current} to ${!current}`);
+            await game.settings.set('foundry-ha-integration', 'enabled', !current);
         }
     };
 
@@ -114,7 +117,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
             name: "lair-control",
             title: "Lair Control",
             icon: "fas fa-dungeon",
-            layer: "controls", // Use generic layer
+            layer: "controls", // Maps to canvas.controls (ControlsLayer)
             tools: v13Tools
         };
 

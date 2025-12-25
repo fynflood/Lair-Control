@@ -12,7 +12,8 @@ Hooks.once('init', () => {
         scope: 'client',
         config: false, // We will use the UI button
         type: Boolean,
-        default: true
+        default: true,
+        onChange: () => ui.controls.render() // Safe re-render when setting changes
     });
 
     game.settings.register('foundry-ha-integration', 'haUrl', {
@@ -86,6 +87,16 @@ Hooks.once('init', () => {
 Hooks.on('getSceneControlButtons', (controls) => {
     if (!game.user.isGM) return;
 
+    // Prevent duplicates
+    // V13 Object check
+    if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
+        if (controls['lair-control']) return;
+    }
+    // Array check
+    else if (Array.isArray(controls)) {
+        if (controls.find(c => c.name === "lair-control")) return;
+    }
+
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
     const myControl = {
@@ -101,10 +112,10 @@ Hooks.on('getSceneControlButtons', (controls) => {
                 toggle: true,
                 active: enabled,
                 onClick: async (toggled) => {
-                    // toggled arg is the NEW state
+                    // toggled arg is the NEW state provided by Foundry
                     console.log(`Lair Control | Toggling to ${toggled}`);
                     await game.settings.set('foundry-ha-integration', 'enabled', toggled);
-                    ui.controls.render();
+                    // No manual render here; the setting onChange handles it safely
                 }
             }
         ]

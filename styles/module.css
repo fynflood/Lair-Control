@@ -13,13 +13,13 @@
     display: none;
     width: 100%;
     box-sizing: border-box;
+    overflow-y: auto;
+    /* Allow scrolling */
 }
 
 .tab[data-tab="lair-control"].active {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    /* Increased gap for better spacing */
+    display: block;
+    /* Use standard block flow instead of flex column for better compatibility */
 }
 
 /* Fix Label Width for Standard Foundry Forms */
@@ -29,11 +29,12 @@
     flex-wrap: nowrap;
     align-items: center;
     width: 100%;
+    margin-bottom: 15px;
+    /* Add spacing between groups */
 }
 
 .tab[data-tab="lair-control"] .form-group label {
     flex: 0 0 150px;
-    /* Fixed width for label to prevent squish */
     white-space: nowrap;
     margin-right: 15px;
     color: #f0f0e0;
@@ -42,23 +43,26 @@
 
 .tab[data-tab="lair-control"] .form-group .form-fields {
     flex: 1;
-    /* Take remaining space */
     display: flex;
     min-width: 0;
-    /* Allow shrinking below content size (Firefox Flexbox fix) */
 }
 
 .tab[data-tab="lair-control"] .form-group .form-fields input {
     width: 100%;
     min-width: 0;
-    /* Firefox input fix */
     box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.5);
+    /* Ensure contrast */
+    color: #fff;
+    border: 1px solid #7a7971;
 }
 
 .tab[data-tab="lair-control"] .notes {
     color: #aaa;
     font-size: 0.8em;
     margin-top: 4px;
+    display: block;
+    /* Ensure it takes full width */
     width: 100%;
-    line-height: 1.4;
+    margin-bottom: 10px;
 }

@@ -1,1 +1,7 @@
-/* CSS for configuration dialogs if needed later */
+/* Lair Control Module Styles */
+
+/* Highlight the disabled icon in red */
+.scene-control .lair-disabled {
+    color: #ff4444 !important;
+    text-shadow: 0 0 5px #ff0000;
+}

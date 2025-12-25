@@ -89,52 +89,32 @@ Hooks.on('getSceneControlButtons', (controls) => {
 
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
-    const toolConfig = {
-        name: "toggle-ha",
-        title: enabled ? "HA Integration: Enabled" : "HA Integration: Disabled",
-        icon: "fas fa-dungeon", // Always use Dungeon icon as requested
-        toggle: true,
-        active: enabled,
-        onClick: async () => { // Reverting to onClick but ignoring arg as V13 allows usage if generic
-            // In V13, onClick(event) is standard for Tools.
-            // We manually toggle the setting to ensure accuracy.
+    // Define the Group Button Configuration
+    // We use a Group-level onClick to prevent Layer Switching (stateless button)
+    const lairGroup = {
+        name: "lair-control",
+        title: enabled ? "Lair Control: On" : "Lair Control: Off",
+        icon: enabled ? "fas fa-dungeon" : "fas fa-dungeon lair-disabled", // Use CSS class for color
+        layer: "controls", // Required but ignored due to onClick
+        visible: true,
+        tools: {}, // Empty tools object for V13 safety
+        onClick: async () => {
             const current = game.settings.get('foundry-ha-integration', 'enabled');
             console.log(`Lair Control | Toggling from ${current} to ${!current}`);
             await game.settings.set('foundry-ha-integration', 'enabled', !current);
+            // ui.controls.render() is handled by the Setting's onChange callback
         }
     };
 
     // V13+ Object Structure Support (Strict)
     if (typeof controls === 'object' && controls !== null && !Array.isArray(controls)) {
-
-        // Define the Tools Dictionary
-        const v13Tools = {
-            "toggle-ha": toolConfig
-        };
-
-        // Define the Group Dictionary
-        const v13Group = {
-            name: "lair-control",
-            title: "Lair Control",
-            icon: "fas fa-dungeon",
-            layer: "controls", // Maps to canvas.controls (ControlsLayer)
-            tools: v13Tools
-        };
-
-        // Inject Group
-        controls['lair-control'] = v13Group;
-
+        controls['lair-control'] = lairGroup;
     }
     // Legacy Array Support (Fallback)
     else if (Array.isArray(controls)) {
-        const legacyGroup = {
-            name: "lair-control",
-            title: "Lair Control",
-            icon: "fas fa-dungeon",
-            layer: "controls",
-            tools: [toolConfig]
-        };
-        controls.push(legacyGroup);
+        // For array support, tools must be an array
+        lairGroup.tools = [];
+        controls.push(lairGroup);
     }
 });
 

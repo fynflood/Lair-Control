@@ -216,6 +216,15 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
         console.warn("Lair Control | Scene Config opened but scene document is missing", app);
         return;
     }
+
+    // Handle HTML element (V13/V12 compatibility) - ensure we have a jQuery object or raw Element
+    // If html is not a jQuery object, allow jQuery to wrap it if available, else usage native.
+    // However, Foundry VTT core exposes jQuery as global `$`.
+    let $html = html;
+    if (typeof html.find !== 'function') {
+        $html = $(html);
+    }
+
     const haEntity = scene.getFlag('foundry-ha-integration', 'haEntity') || "";
 
     // Fetch entities from HA
@@ -225,20 +234,41 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
         options = entities.map(e => `<option value="${e}"></option>`).join('');
     }
 
-    const formGroup = `
-    <div class="form-group">
-        <label>Home Assistant Entity</label>
-        <div class="form-fields">
-            <input type="text" name="flags.foundry-ha-integration.haEntity" value="${haEntity}" list="ha-entities-list" placeholder="scene.my_dungeon_scene">
-            <datalist id="ha-entities-list">
-                ${options}
-            </datalist>
+    // 1. Inject Tab Navigation
+    const tabNav = `
+    <a class="item" data-tab="lair-control">
+        <i class="fas fa-dungeon"></i> Lair Control
+    </a>`;
+
+    const nav = $html.find('nav.sheet-tabs');
+    nav.append(tabNav);
+
+    // 2. Inject Tab Content
+    // We match the style of existing tabs
+    const tabContent = `
+    <div class="tab" data-tab="lair-control">
+        <div class="form-group">
+            <label>Home Assistant Entity</label>
+            <div class="form-fields">
+                <input type="text" name="flags.foundry-ha-integration.haEntity" value="${haEntity}" list="ha-entities-list" placeholder="scene.my_dungeon_scene">
+                <datalist id="ha-entities-list">
+                    ${options}
+                </datalist>
+            </div>
+            <p class="notes">Select or enter the Entity ID (scene, script, light) to turn on when this Scene is activated.</p>
         </div>
-        <p class="notes">Select or enter the Entity ID (scene, script, light) to turn on when this Scene is activated.</p>
+        <div class="form-group">
+             <p class="notes">More Lair Control settings may appear here in the future.</p>
+        </div>
     </div>
     `;
 
-    html.find('button[type="submit"]').before(formGroup);
+    // Append to the form or specific container. SceneConfig usually has a form.
+    // We insert it after the last tab, or just append to the form's main content area.
+    // Usually, the tabs are siblings.
+    $html.find('button[type="submit"]').before(tabContent);
+
+    // Resize to fit new content
     app.setPosition({ height: "auto" });
 });
 

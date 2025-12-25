@@ -86,18 +86,6 @@ Hooks.once('init', () => {
 Hooks.on('getSceneControlButtons', (controls) => {
     if (!game.user.isGM) return;
 
-    // V13 Safety: Ensure controls is an array
-    let outputControls = controls;
-    if (!Array.isArray(outputControls)) {
-        console.warn("Lair Control | 'controls' hook argument is not an array. Trying ui.controls.controls.");
-        if (ui.controls && Array.isArray(ui.controls.controls)) {
-            outputControls = ui.controls.controls;
-        } else {
-            console.error("Lair Control | Could not find controls array. Button injection failed.", outputControls);
-            return;
-        }
-    }
-
     const enabled = game.settings.get('foundry-ha-integration', 'enabled');
 
     const myControl = {
@@ -109,7 +97,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
             {
                 name: "toggle-ha",
                 title: enabled ? "Disable Home Assistant" : "Enable Home Assistant",
-                icon: "fas fa-home", // We will try to use the SVG via CSS if possible, but FontAwesome is safer for tools
+                icon: "fas fa-home",
                 toggle: true,
                 active: enabled,
                 onClick: async (toggled) => {
@@ -120,14 +108,20 @@ Hooks.on('getSceneControlButtons', (controls) => {
         ]
     };
 
-    if (Array.isArray(outputControls)) {
-        outputControls.push(myControl);
-    } else if (typeof outputControls === 'object' && outputControls !== null) {
-        // V13 (Build 351+) seems to use an Object/Map structure instead of Array
+    // V13+ Object/Map Structure Detection
+    if (controls.push) {
+        // Legacy/Stable Array support (V10-V12)
+        controls.push(myControl);
+    } else if (typeof controls === 'object' && controls !== null) {
+        // V13+ Object Support (Key assignment)
         console.log("Lair Control | Detected V13 Object-based controls. Injecting via key assignment.");
-        outputControls['lair-control'] = myControl;
+        // Try to assign using key if it acts like a dictionary
+        controls['lair-control'] = myControl;
+
+        // Failsafe: If for some reason the UI relies on 'order', we let core handle it. 
+        // In V13, objects in this hook are typically 'ControlGroups'.
     } else {
-        console.error("Lair Control | Unknown controls structure. Injection failed.", outputControls);
+        console.error("Lair Control | Unknown controls structure. Injection failed.", controls);
     }
 });
 

@@ -106,7 +106,7 @@ Hooks.on('renderSceneControls', (app, html, data) => {
 
     // Find the main controls list (Left Sidebar)
     // We attempt to find the V13/Theme specific menu first, then fallback to standard OL
-    const jqSceneControlsRoot = html;
+    const jqSceneControlsRoot = $(html);
     let toolsMenu = jqSceneControlsRoot.find('menu#scene-controls-layers').first();
 
     if (!toolsMenu.length) {

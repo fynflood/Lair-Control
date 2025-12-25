@@ -15,7 +15,7 @@
   "styles": [
     "styles/module.css"
   ],
-  "url": "https://github.com/user/foundry-ha-integration",
-  "manifest": "https://raw.githubusercontent.com/user/foundry-ha-integration/master/module.json",
-  "download": "https://github.com/user/foundry-ha-integration/archive/master.zip"
+  "url": "https://github.com/fynflood/Lair-Control",
+  "manifest": "https://raw.githubusercontent.com/fynflood/Lair-Control/master/module.json",
+  "download": "https://github.com/fynflood/Lair-Control/archive/master.zip"
 }

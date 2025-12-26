@@ -260,7 +260,7 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
         // Force resize after a macrotask
         setTimeout(() => {
             app.setPosition({ height: "auto" });
-        }, 50);
+        }, 100);
     });
 
     // 2. Inject Tab Content
@@ -289,7 +289,7 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     // Resize to fit new content
     setTimeout(() => {
         app.setPosition({ height: "auto" });
-    }, 50);
+    }, 100);
 });
 
 Hooks.on('canvasReady', async (canvas) => {

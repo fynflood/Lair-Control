@@ -243,28 +243,7 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     const nav = $html.find('nav.sheet-tabs');
     nav.append(tabNav);
 
-    // Manually handle click since we injected after render
-    nav.find('a[data-tab="lair-control"]').on('click', (event) => {
-        event.preventDefault();
-        const tabs = $html.find('nav.sheet-tabs .item');
-        const content = $html.find('.tab');
-
-        // Deactivate all
-        tabs.removeClass('active');
-        content.removeClass('active');
-
-        // Activate Lair Control
-        $(event.currentTarget).addClass('active');
-        $html.find('.tab[data-tab="lair-control"]').addClass('active');
-
-        // Force resize after a macrotask
-        setTimeout(() => {
-            app.setPosition({ height: "auto" });
-        }, 100);
-    });
-
     // 2. Inject Tab Content
-    // We match the style of existing tabs
     const tabContent = `
     <div class="tab" data-tab="lair-control">
         <p class="notes">Configure automation triggers for this Scene.</p>
@@ -281,15 +260,59 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     </div>
     `;
 
-    // Append to the form or specific container. SceneConfig usually has a form.
-    // We insert it after the last tab, or just append to the form's main content area.
-    // Usually, the tabs are siblings.
-    $html.find('button[type="submit"]').before(tabContent);
+    // Foundry SceneConfig usually has a .sheet-body or we can just append to the form
+    // Appending to the same parent as other .tab elements is best.
+    let contentContainer = $html.find('.sheet-body');
+    if (!contentContainer.length) {
+        // Fallback: Find the parent of the first tab
+        const firstTab = $html.find('.tab').first();
+        if (firstTab.length) {
+            contentContainer = firstTab.parent();
+        } else {
+            // Last resort: before the buttons
+            contentContainer = $html.find('button[type="submit"]').parent();
+        }
+    }
 
-    // Resize to fit new content
-    setTimeout(() => {
-        app.setPosition({ height: "auto" });
-    }, 100);
+    contentContainer.append(tabContent);
+
+    // 3. Tab Handling Logic
+    nav.find('a[data-tab="lair-control"]').on('click', (event) => {
+        event.preventDefault();
+
+        // Deactivate all nav items and tabs in this sheet
+        $html.find('nav.sheet-tabs .item').removeClass('active');
+        $html.find('.tab').each((i, el) => {
+            $(el).removeClass('active');
+            if ($(el).data('tab') !== 'lair-control') {
+                $(el).hide(); // Force hide others
+            }
+        });
+
+        // Activate Lair Control
+        $(event.currentTarget).addClass('active');
+        const ourTab = $html.find('.tab[data-tab="lair-control"]');
+        ourTab.addClass('active').show();
+
+        // Use Foundry's native position update if possible
+        setTimeout(() => {
+            app.setPosition({ height: "auto" });
+        }, 100);
+    });
+
+    // If another tab is clicked, make sure ours is hidden
+    nav.find('.item').not('[data-tab="lair-control"]').on('click', () => {
+        const ourTab = $html.find('.tab[data-tab="lair-control"]');
+        ourTab.removeClass('active').hide();
+        setTimeout(() => {
+            app.setPosition({ height: "auto" });
+        }, 100);
+    });
+
+    // Initial resize if we happen to be active (unlikely on open)
+    if (nav.find('a[data-tab="lair-control"]').hasClass('active')) {
+        setTimeout(() => app.setPosition({ height: "auto" }), 100);
+    }
 });
 
 Hooks.on('canvasReady', async (canvas) => {

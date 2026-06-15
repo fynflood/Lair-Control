@@ -1,0 +1,58 @@
+<form class="lair-control-automation-settings" autocomplete="off">
+    <p class="notes">Configure which Home Assistant entities or scenes are triggered by game events. Leave a
+        field blank to disable that automation.</p>
+
+    <datalist id="lair-control-entities-list">
+        {{{entityOptions}}}
+    </datalist>
+
+    <div class="form-group">
+        <label>Nat 20 Entity/Script</label>
+        <div class="form-fields">
+            <input type="text" name="nat20Entity" value="{{nat20Entity}}" list="lair-control-entities-list"
+                placeholder="script.critical_hit_lights">
+        </div>
+        <p class="notes">Triggered when a natural 20 is rolled.</p>
+    </div>
+
+    <div class="form-group">
+        <label>Nat 1 Entity/Script</label>
+        <div class="form-fields">
+            <input type="text" name="nat1Entity" value="{{nat1Entity}}" list="lair-control-entities-list"
+                placeholder="script.fumble_lights">
+        </div>
+        <p class="notes">Triggered when a natural 1 is rolled.</p>
+    </div>
+
+    <div class="form-group">
+        <label>Game Status Entity</label>
+        <div class="form-fields">
+            <input type="text" name="gameStatusEntity" value="{{gameStatusEntity}}"
+                list="lair-control-entities-list" placeholder="input_boolean.game_active">
+        </div>
+        <p class="notes">Turned on when the world finishes loading (your session starts).</p>
+    </div>
+
+    <div class="form-group">
+        <label>Combat Start Entity/Script</label>
+        <div class="form-fields">
+            <input type="text" name="combatStartEntity" value="{{combatStartEntity}}"
+                list="lair-control-entities-list" placeholder="scene.combat_mode">
+        </div>
+        <p class="notes">Triggered when combat begins.</p>
+    </div>
+
+    <div class="form-group">
+        <label>Combat End Entity/Script (fallback)</label>
+        <div class="form-fields">
+            <input type="text" name="combatEndEntity" value="{{combatEndEntity}}"
+                list="lair-control-entities-list" placeholder="scene.normal_mode">
+        </div>
+        <p class="notes">Triggered when combat ends, but only if the active Scene has no Lair Control entity
+            configured. Otherwise the Scene's own entity is re-activated instead.</p>
+    </div>
+
+    <footer class="sheet-footer flexrow">
+        <button type="submit"><i class="fas fa-save"></i> Save Changes</button>
+    </footer>
+</form>

@@ -1,4 +1,5 @@
 import { HomeAssistantClient } from './api.js';
+import { AutomationSettingsForm } from './automation-settings.js';
 
 let haClient;
 
@@ -40,7 +41,7 @@ Hooks.once('init', () => {
         name: 'Nat 20 Entity/Script',
         hint: 'Entity ID to turn on (e.g., script.critical_hit_lights) when a Nat 20 is rolled.',
         scope: 'world',
-        config: true,
+        config: false,
         type: String,
         default: ""
     });
@@ -49,7 +50,7 @@ Hooks.once('init', () => {
         name: 'Nat 1 Entity/Script',
         hint: 'Entity ID to turn on (e.g., script.fumble_lights) when a Nat 1 is rolled.',
         scope: 'world',
-        config: true,
+        config: false,
         type: String,
         default: ""
     });
@@ -58,7 +59,7 @@ Hooks.once('init', () => {
         name: 'Game Status Entity',
         hint: 'Entity ID (input_boolean) to toggle ON when the world is active.',
         scope: 'world',
-        config: true,
+        config: false,
         type: String,
         default: ""
     });
@@ -67,18 +68,28 @@ Hooks.once('init', () => {
         name: 'Combat Start Entity/Script',
         hint: 'Entity ID to turn on when combat begins.',
         scope: 'world',
-        config: true,
+        config: false,
         type: String,
         default: ""
     });
 
     game.settings.register('foundry-ha-integration', 'combatEndEntity', {
         name: 'Combat End Entity/Script',
-        hint: 'Entity ID to turn on when combat ends.',
+        hint: 'Entity ID to turn on when combat ends, used only if the active Scene has no Lair Control entity configured.',
         scope: 'world',
-        config: true,
+        config: false,
         type: String,
         default: ""
+    });
+
+    // Custom menu with searchable HA entity pickers for the settings above
+    game.settings.registerMenu('foundry-ha-integration', 'automationSettingsMenu', {
+        name: 'Automation Entities',
+        label: 'Configure Automation Entities',
+        hint: 'Choose the Home Assistant entities/scenes triggered by Nat 20/Nat 1 rolls, game status, and combat start/end.',
+        icon: 'fas fa-dungeon',
+        type: AutomationSettingsForm,
+        restricted: true
     });
 
     haClient = new HomeAssistantClient();
@@ -203,7 +214,14 @@ Hooks.on('deleteCombat', (combat, options, userId) => {
     if (!game.user.isGM) return;
 
     console.log('Home Assistant Integration | Combat Ended');
-    const entity = game.settings.get('foundry-ha-integration', 'combatEndEntity');
+
+    // Prefer reverting to the active Scene's own Lair Control entity, so the
+    // room returns to whatever that Scene set up. Fall back to the global
+    // Combat End entity if the Scene has nothing configured.
+    const scene = combat.scene ?? canvas.scene;
+    const sceneEntity = scene?.getFlag('foundry-ha-integration', 'haEntity');
+    const entity = sceneEntity || game.settings.get('foundry-ha-integration', 'combatEndEntity');
+
     if (entity) {
         const domain = entity.split('.')[0];
         haClient.callService(domain, 'turn_on', { entity_id: entity });
@@ -277,53 +295,49 @@ Hooks.on('renderSceneConfig', async (app, html, data) => {
     contentContainer.append(tabContent);
 
     // 3. Tab Handling Logic
-    nav.find('a[data-tab="lair-control"]').on('click', (event) => {
+    // Foundry's native Tabs controller drives the built-in tabs (Basics,
+    // Lighting, Ambience, etc.) purely via the ".active" class on nav items
+    // and their ".tab" panels, with CSS handling visibility. The previous
+    // implementation used jQuery .hide()/.show() (inline "display" styles)
+    // on the *other* tabs when Lair Control opened, which left a stale
+    // "display: none" behind - so clicking back to e.g. Basics re-added
+    // ".active" but the leftover inline style kept it hidden, making the
+    // dialog look stuck. Only toggle ".active" here; CSS handles the rest.
+    const lairNavItem = nav.find('a[data-tab="lair-control"]');
+    const lairTab = $html.find('.tab[data-tab="lair-control"]');
+
+    lairNavItem.on('click', (event) => {
         event.preventDefault();
 
-        // Deactivate all nav items and tabs in this sheet
-        $html.find('nav.sheet-tabs .item').removeClass('active');
-        $html.find('.tab').each((i, el) => {
-            $(el).removeClass('active');
-            if ($(el).data('tab') !== 'lair-control') {
-                $(el).hide(); // Force hide others
-            }
-        });
+        nav.find('.item').removeClass('active');
+        $html.find('.tab').removeClass('active');
 
-        // Activate Lair Control
-        $(event.currentTarget).addClass('active');
-        const ourTab = $html.find('.tab[data-tab="lair-control"]');
-        ourTab.addClass('active').show();
+        lairNavItem.addClass('active');
+        lairTab.addClass('active');
 
-        // Use Foundry's native position update if possible
-        setTimeout(() => {
-            app.setPosition({ height: "auto" });
-        }, 100);
-    });
-
-    // If another tab is clicked, make sure ours is hidden
-    nav.find('.item').not('[data-tab="lair-control"]').on('click', () => {
-        const ourTab = $html.find('.tab[data-tab="lair-control"]');
-        ourTab.removeClass('active').hide();
-        setTimeout(() => {
-            app.setPosition({ height: "auto" });
-        }, 100);
-    });
-
-    // Initial resize if we happen to be active (unlikely on open)
-    if (nav.find('a[data-tab="lair-control"]').hasClass('active')) {
         setTimeout(() => app.setPosition({ height: "auto" }), 100);
-    }
+    });
+
+    // Deactivate ours when a native tab is clicked, in case Foundry's own
+    // Tabs controller doesn't iterate over our dynamically-injected tab.
+    nav.find('.item').not(lairNavItem).on('click.lairControl', () => {
+        lairNavItem.removeClass('active');
+        lairTab.removeClass('active');
+        setTimeout(() => app.setPosition({ height: "auto" }), 100);
+    });
 });
 
-Hooks.on('canvasReady', async (canvas) => {
+Hooks.on('updateScene', (scene, changed, options, userId) => {
     if (!game.user.isGM) return;
 
-    const scene = canvas.scene;
-    if (!scene) return;
+    // Only fire when this Scene is being made the active/live Scene for
+    // players (the "Activate Scene" button) - not on every edit, and not
+    // just because the GM is browsing/previewing a Scene on their canvas.
+    if (changed.active !== true) return;
 
     const entity = scene.getFlag('foundry-ha-integration', 'haEntity');
     if (entity) {
-        console.log(`Home Assistant Integration | Activating Scene Entity: ${entity}`);
+        console.log(`Lair Control | Scene Activated: Triggering Entity: ${entity}`);
         const domain = entity.split('.')[0];
         haClient.callService(domain, 'turn_on', { entity_id: entity });
     }

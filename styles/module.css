@@ -10,12 +10,16 @@
 .tab[data-tab="lair-control"] {
     padding: 10px;
     min-height: 250px;
-    display: none;
     width: 100%;
     box-sizing: border-box;
 }
 
-/* Active state for our tab */
+/* Visibility driven purely by the ".active" class (with !important so it
+   can't be left stuck by stale inline "display" styles from other tabs) */
+.tab[data-tab="lair-control"]:not(.active) {
+    display: none !important;
+}
+
 .tab[data-tab="lair-control"].active {
     display: block !important;
 }
@@ -36,6 +40,25 @@
 
 /* Input styles to match foundry */
 .tab[data-tab="lair-control"] input[type="text"] {
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--color-text-light-highlight);
+    border: 1px solid var(--color-border-dark);
+}
+
+/* Automation Entities settings form */
+.lair-control-automation-settings .form-group label {
+    color: var(--color-text-light-primary) !important;
+    font-weight: bold;
+}
+
+.lair-control-automation-settings .notes {
+    color: var(--color-text-light-secondary);
+    font-size: var(--font-size-12);
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.lair-control-automation-settings input[type="text"] {
     background: rgba(0, 0, 0, 0.2);
     color: var(--color-text-light-highlight);
     border: 1px solid var(--color-border-dark);

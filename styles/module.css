@@ -1,65 +1,9 @@
-/* Lair Control Module Styles */
+/* Lair Control Module Styles
+   Colours and form layout are left to Foundry's own theme so the module
+   follows the light/dark setting. */
 
-/* Highlight the disabled icon in red */
-.scene-control .lair-disabled {
-    color: var(--color-danger) !important;
-    text-shadow: 0 0 5px #ff0000;
-}
-
-/* Tab content defaults - using relative positioning and block flow */
-.tab[data-tab="lair-control"] {
-    padding: 10px;
-    min-height: 250px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* Visibility driven purely by the ".active" class (with !important so it
-   can't be left stuck by stale inline "display" styles from other tabs) */
-.tab[data-tab="lair-control"]:not(.active) {
-    display: none !important;
-}
-
-.tab[data-tab="lair-control"].active {
-    display: block !important;
-}
-
-/* Ensure labels are visible using Foundry native color variables */
-.tab[data-tab="lair-control"] .form-group label {
-    color: var(--color-text-light-primary) !important;
-    font-weight: bold;
-}
-
-/* Notes styles */
-.tab[data-tab="lair-control"] .notes {
-    color: var(--color-text-light-secondary);
-    font-size: var(--font-size-12);
-    line-height: 1.4;
-    margin-bottom: 15px;
-}
-
-/* Input styles to match foundry */
-.tab[data-tab="lair-control"] input[type="text"] {
-    background: rgba(0, 0, 0, 0.2);
-    color: var(--color-text-light-highlight);
-    border: 1px solid var(--color-border-dark);
-}
-
-/* Automation Entities settings form */
-.lair-control-automation-settings .form-group label {
-    color: var(--color-text-light-primary) !important;
-    font-weight: bold;
-}
-
-.lair-control-automation-settings .notes {
-    color: var(--color-text-light-secondary);
-    font-size: var(--font-size-12);
-    line-height: 1.4;
-    margin-bottom: 10px;
-}
-
-.lair-control-automation-settings input[type="text"] {
-    background: rgba(0, 0, 0, 0.2);
-    color: var(--color-text-light-highlight);
-    border: 1px solid var(--color-border-dark);
+.lair-control-automation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
